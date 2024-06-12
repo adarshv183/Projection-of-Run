@@ -230,7 +230,7 @@ const StepTwo = ({ setTotal }) => {
               <button onClick={handleAddArraySchedule3}>+ Add Schedule</button>
 
               {showCloudStore && (
-                <AddSchedule3 count={count_snap + count_onprim + count_cloud} onSave={(data) => handleSave(data, 'cloudStore')} onCancel={handleCancel} count_cloud={count_onprim + count_snap} />
+                <AddSchedule3 count={count_snap + count_onprim + count_cloud} onSave={(data) => handleSave(data, 'cloudStore')} onCancel={handleCancel} count_cloud={count_onprim - count_snap} count_snap={count_snap} />
               )}
               {cloudStoreSchedules.length > 0 && (
                 <div>

@@ -156,7 +156,7 @@ function Grid({ categories, timeIntervals, occurrences }) {
                                         >
                                             <svg width="20" height="20">
                                                 <circle cx="10" cy="10" r="5" fill={occurrence.current_id === currentSchedule?.sourceId ? 'black' : 'blue'} />
-                                             </svg>
+                                            </svg>
                                         </div>
                                     ))}
 
@@ -186,7 +186,32 @@ function Grid({ categories, timeIntervals, occurrences }) {
 
 
 
-function BackupScheduleVisualization() {
+function BackupScheduleVisualization(data) {
+    // console.log("Inside Scatter Chart")
+    // // console.log(data)
+    // const response = data
+    // console.log(response)
+    // console.log(typeof (response))
+    // const occurrences = response.data.map(entry => entry.occurrences).flat();
+
+    // const categories = response.data.reduce((acc, curr) => {
+    //     const schedules = curr.schedules_involved.map(schedule => ({
+    //         id: schedule.id,
+    //         name: schedule.type
+    //     }));
+    //     schedules.forEach(schedule => {
+    //         if (!acc.some(category => category.id === schedule.id)) {
+    //             acc.push(schedule);
+    //         }
+    //     });
+    //     return acc;
+    // }, []);
+    // const timeIntervals = [...new Set(occurrences.map(occurrence => occurrence.time))].map(time => ({
+    //     startTime: time
+    // }));
+    console.log("Occurrences:", occurrences);
+    console.log("Categories:", categories);
+    console.log("Timestamps", timeIntervals)
     return (
         <div className="visualization">
             <h2>Backup Schedule Visualization</h2>

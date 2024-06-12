@@ -4,13 +4,15 @@ from datetime import datetime
 from flask_cors import CORS
 import pymongo
 from backend.projectionCountUpdated import projectionCount
+import backend.policyTree as PolicyTree
+import backend.getOverlaps as GetOverlaps
 
 app = Flask(__name__)
 CORS(app)
 
 # conn_str = "mongodb+srv://sanketemalasge2:hpe123@cluster0.0iph2l9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
-conn_str =  'mongodb+srv://saiis21:hpe2444@cluster0.vaxb7qe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+conn_str = "mongodb+srv://saiis21:hpe2444@cluster0.vaxb7qe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 try:
     client = pymongo.MongoClient(conn_str)
@@ -51,44 +53,60 @@ def handle_exception(err):
 #     data = json.load(data_file)
 
 
-# @app.route("/get_overlaps", methods=["GET"])
-# def get_overlaps():
-#     end_time = request.args.get("end_time")
-#     compare(data.get("createdAt"), end_time)
-#     root = PolicyTree.build_tree(data)
-#     paths = PolicyTree.find_all_paths(root)
-#     occurrences = GetOverlaps.get_res(paths, end_time)
-#     return jsonify(occurrences)
+@app.route("/get_overlaps", methods=["POST"])
+def get_overlaps():
+    # end_time = request.args.get("end_time")
+    givenTime = request.get_json()
+    print("givenTime is: ", givenTime)
+    try:
+        jsonData = collection.find_one({"policyName": givenTime["policyName"]})
+        # print(jsonData)
+    except MongoError as e:
+        print(e)
+    # compare(data.get("createdAt"), end_time)
+    root = PolicyTree.build_tree(jsonData)
+    paths = PolicyTree.find_all_paths(root)
+    occurrences = GetOverlaps.get_res(paths, givenTime["givenTime"])
+    return jsonify(occurrences)
 
 
-# @app.route("/get_policy_tree", methods=["GET"])
-# def get_policy_tree():
-#     return jsonify(PolicyTree.tree_to_list_format(PolicyTree.build_tree(data)))
+@app.route("/get_policy_tree", methods=["POST"])
+def get_policy_tree():
+    req = request.get_json()
+    print(req)
+    try:
+        jsonData = collection.find_one({"policyName": req["data"]["policy"]})
+        # print(jsonData)
+    except MongoError as e:
+        print(e)
+    print(json.dumps(jsonData, indent=4, default=str))
+    return jsonify(PolicyTree.tree_to_list_format(PolicyTree.build_tree(jsonData)))
 
 
 # @app.route("/givenTime", methods=["POST"])
 # def projection_count():
 #     print(request.get_json())
 #     givenTime = request.get_json()
-   
+
 #     print('givenTime is: ', givenTime)
 #     # jsonData = collection.find_one({"policyName":givenTime['policyName']})
 #     # print(jsonData)
 #     scheduleCount = projectionCount(data, givenTime=givenTime['givenTime'])
 #     return jsonify(scheduleCount)
 
+
 @app.route("/givenTime", methods=["POST"])
 def projection_count():
     # print(request.get_json())
     givenTime = request.get_json()
-   
-    print('givenTime is: ', givenTime)
+
+    print("givenTime is: ", givenTime)
     try:
-        jsonData = collection.find_one({"policyName":givenTime['policyName']})
+        jsonData = collection.find_one({"policyName": givenTime["policyName"]})
         # print(jsonData)
     except MongoError as e:
         print(e)
-    scheduleCount = projectionCount(jsonData, givenTime=givenTime['givenTime'])
+    scheduleCount = projectionCount(jsonData, givenTime=givenTime["givenTime"])
     return jsonify(scheduleCount)
 
 
@@ -116,10 +134,17 @@ def database():
             # Insert the data into the MongoDB collection
             result = collection.insert_one(data)
             # Return a success message with the inserted ID
-            return jsonify({"message": "Data inserted successfully", "id": str(result.inserted_id)}), 200
+            return (
+                jsonify(
+                    {
+                        "message": "Data inserted successfully",
+                        "id": str(result.inserted_id),
+                    }
+                ),
+                200,
+            )
         else:
             return jsonify({"error": "Policy name is required"}), 400
-
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -12,6 +12,9 @@ const Dashboard = () => {
     const [customDate, setCustomDate] = useState('');
     const [resData, setResData] = useState(null);
     const [policyName, setPolicyName] = useState('');
+    // change added
+    // const [policyTreeData, setPolicyTreeData] = useState([]);
+    const [projectionRun, setProjectionRun] = useState([]);
 
     const convertToCustomFormat = (isoString) => {
         const dateObj = new Date(isoString);
@@ -43,6 +46,25 @@ const Dashboard = () => {
             setResData(res.data);
         } catch (err) {
             console.error(err);
+        }
+
+        // try {
+        //     const treeRes = await axios.post('/get_policy_tree', {
+        //         policyName: policyName
+        //     });
+        //     setPolicyTreeData(treeRes.data)
+        // } catch (err) {
+        //     console.error(err)
+        // }
+
+        try {
+            const tableRes = await axios.post('/get_overlaps', {
+                givenTime: customDate,
+                policyName: policyName
+            });
+            setProjectionRun(tableRes.data)
+        } catch (err) {
+            console.log(err)
         }
     };
 
@@ -112,9 +134,9 @@ const Dashboard = () => {
                     />
                 </div>
             </div>
-            <div><ScatterChart/></div>
-            <div><PolicyTree /></div>
-           
+            <div><PolicyTree policy={"test3"} /></div>
+            <div><ScatterChart data={projectionRun} /></div>
+
         </>
     );
 };

@@ -49,7 +49,7 @@
       },
       "scheduleName": "HPE_Cloud_Protection_Store_3",
       "sourceScheduleId": {
-        "$numberInt": "3"
+        "$numberInt": "2"
       },
       "backupFrequency": {
         "value": "5",

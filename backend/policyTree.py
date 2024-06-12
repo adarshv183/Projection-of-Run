@@ -1,16 +1,27 @@
 import json
 
+# with open(
+#     "D:/Adhi/BMS/HPE-CTY/Projection-of-Run/json_files/new_json2.json", "r"
+# ) as data_file:
+#     data = json.load(data_file)
+
 
 # function for converting the time to lowest possible unit - hours
-def convert_to_hours(time, recurrence):
-    if recurrence == "HOURLY":
-        return time
-    elif recurrence == "DAILY":
-        return time * 24
-    elif recurrence == "WEEKLY":
-        return time * 24 * 7
-    elif recurrence == "MONTHLY":  # assuming avg 30 days per month
-        return time * 24 * 30
+def convert_to_minutes(time, recurrence):
+    if recurrence == "HOURLY" or recurrence == "hours":
+        return time * 60
+    elif recurrence == "DAILY" or recurrence == "days":
+        return time * 24 * 60
+    elif recurrence == "WEEKLY" or recurrence == "weeks":
+        return time * 24 * 7 * 60
+    elif (
+        recurrence == "MONTHLY" or recurrence == "months"
+    ):  # assuming avg 30 days per month
+        return time * 24 * 30 * 60
+    elif recurrence == "YEARLY" or recurrence == "years":
+        return time * 24 * 365 * 60
+    else:
+        return 0
 
 
 # Class TreeNode
@@ -29,31 +40,25 @@ class TreeNode:
 
 # creation of tree
 def build_tree(data):
-    protections = data["protections"]
+    protections = ["arraySchedules", "onPremisesSchedules", "cloudStoreSchedules"]
     root = TreeNode("root", "root", "root", "root")
     schedule_map = {}
 
     for protection in protections:
-        schedule_type = protection["type"]
-        for schedule in protection["schedules"]:
-            schedule_id = schedule["scheduleId"]
-
-            try:
-                startTime = (
-                    data["createdAt"].split("T")[0]
-                    + " "
-                    + schedule["schedule"]["startTime"]
-                )
-            except KeyError:
-                startTime = (
-                    data["createdAt"].split("T")[0]
-                    + " "
-                    + schedule["schedule"]["activeTime"]["activeFromTime"]
-                )
-
-            interval = convert_to_hours(
-                schedule["schedule"]["repeatInterval"]["every"],
-                schedule["schedule"]["recurrence"],
+        schedule_type = protection
+        if schedule_type == "arraySchedules":
+            schedule_type = "SNAPSHOT"
+        elif protection == "onPremisesSchedules":
+            schedule_type = "BACKUP"
+        else:
+            schedule_type = "CLOUD_BACKUP"
+        for schedule in data[protection]:
+            # schedule_id = int(schedule["scheduleId"]["$numberInt"])
+            schedule_id = int(schedule["scheduleId"])
+            startTime = data["createdAt"].split("T")[0] + " " + schedule["StartAfter"]
+            interval = convert_to_minutes(
+                int(schedule.get("backupFrequency").get("value")),
+                schedule.get("backupFrequency").get("unit"),
             )
 
             schedule_map[schedule_id] = schedule
@@ -64,7 +69,8 @@ def build_tree(data):
                 )
 
             else:
-                parent_id = schedule["sourceProtectionScheduleId"]
+                # parent_id = int(schedule.get("sourceScheduleId").get("$numberInt"))
+                parent_id = int(schedule.get("sourceScheduleId"))
                 if parent_id in schedule_map:
                     parent_node = find_node(root, parent_id)
                     if parent_node:
@@ -116,10 +122,11 @@ def tree_to_list_format(node):
             lis.append(
                 {
                     "Id": int(child.id),
-                    "Role": str(child.type) +" "+ str(child.id),
+                    "Role": str(child.type) + " " + str(child.id),
                     "Team": "parent" if (str(node.id) == "root") else str(node.id),
                 }
             )
+            print(lis)
             tree_to_list_format(child)
     return lis
 
@@ -149,3 +156,8 @@ def find_all_paths(root):
 
     dfs(root)
     return paths
+
+
+# if __name__ == "__main__":
+#     root = build_tree(data)
+#     print(json.dumps(tree_to_dict(root), indent=4, default=4))

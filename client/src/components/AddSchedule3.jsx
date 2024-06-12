@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
 
-const AddSchedule3 = ({ count, onSave, onCancel, count_cloud }) => {
+const AddSchedule3 = ({ count, onSave, onCancel, count_cloud, count_snap }) => {
 
     function getRandomInt(max) {
-        return Math.floor(Math.random() * max);
+        return Math.floor(Math.random() * max + 1);
     }
-    const randomCount = getRandomInt(count_cloud) + 1;
+    const randomCount = getRandomInt(count_cloud) + count_snap;
 
     const [scheduleId] = useState(count)
     const [scheduleName] = useState(`HPE_Cloud_Protection_Store_${count}`);
